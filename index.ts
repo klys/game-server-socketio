@@ -1,5 +1,7 @@
 import World from "./components/world"
 import {Server} from "socket.io"
+import * as express from "express";
+import { createServer } from "http";
 import ServerToClientEvents from "./Server/ServerToClientEvents";
 import ClientToServerEvents from "./Server/ClientToServerEvents";
 import InterServerEvents from "./Server/InterServerEvents";
@@ -9,16 +11,20 @@ interface SocketData {
   age: number;
 }
 
+const app = express();
+const httpServer = createServer(app);
+
 const io = new Server<
 ClientToServerEvents, 
 ServerToClientEvents, 
 InterServerEvents, 
 SocketData>
-({ cors:{origin: "*"} });
+(httpServer,{ cors:{origin: "*"} });
 
 const world = new World(400,400);
 
 world.setSocketServer(io)
+//world.shotProjectil() // test
 
 io.on("connection", (socket) => {
   console.log("Client connected!")
@@ -42,6 +48,10 @@ io.on("connection", (socket) => {
         
         world.players.set(player.socketId, player)
     })
+
+    socket.on("shotProjectil", (data) => {
+      world.shotProjectil(data.x,data.y,data.angle, socket.id)
+    })
     
     socket.on("disconnect", (reason) => {
       // remove player from all instances
@@ -54,5 +64,7 @@ io.on("connection", (socket) => {
 
 
 
-io.listen(3001);
+//io.listen(3001);
+
+httpServer.listen(3001);
 console.log("Listening on port "+3001)

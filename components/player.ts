@@ -5,12 +5,17 @@ import { point_direction } from "./gameMath";
 export default class Player {
     x: number;
     y: number;
+    width:number;
+    height:number;
     speed:number;
     socketId:string;
     path:number[][];
     path_pos:number;
-    angle:number;
+    angle:number; 
     finder:Pathfinding.Finder;
+    life:number;
+    death:boolean;
+    waitTime:number;
 
     /*mMap:Pathfinding.Grid
     mPath:number[][];
@@ -20,12 +25,17 @@ export default class Player {
     constructor(x:number,y:number,socketId:string){
         this.x = x;
         this.y = y;
+        this.width = 32;
+        this.height = 32;
+        this.life = 100;
         this.angle = 0;
         this.socketId = socketId;
         this.speed = 3;
         this.path = [];
         this.path_pos = 0;
+        this.death = false;
         this.finder = new Pathfinding.AStarFinder({ diagonalMovement: 1 })
+        this.waitTime = 15;
 
         /*this.mMap = new Pathfinding.Grid(40,40)
         this.mPath = [];
@@ -76,5 +86,28 @@ export default class Player {
             y:this.y,
             angle:this.angle
         }
+    }
+
+    public hurt(damage:number) {
+        this.life -= damage;
+        if (this.life <= 0) {
+            this.die()
+            console.log("playerDeath being sent.")
+        } else {
+            World.socketServer.emit("playerHurt", {playerId:this.socketId,life:this.life})
+            console.log("playerHurt being sent.")
+        } 
+    }
+
+    public reborn() {
+        this.life = 100;
+        this.death = false;
+        World.socketServer.emit("playerReborn", {playerId:this.socketId})
+    }
+
+    public die() {
+        this.death = true;
+        this.waitTime = 15;
+        World.socketServer.emit("playerDeath", {playerId:this.socketId})
     }
 }

@@ -86,3 +86,19 @@ export function arctan (x1:number,y1:number,x2:number,y2:number): number {
     //indegrees=180*inradians/Math.PI
     return inradians
 }
+
+export function polar_move (x:number, y:number,angle:number,distance:number):any {
+    return {
+        x:Math.ceil(x + distance * Math.cos(angle * Math.PI / 180) ),
+        y:Math.ceil(y + distance * Math.sin(angle * Math.PI / 180) ) 
+    }
+};
+
+export function collision_square(rect1:any,rect2:any):boolean {
+    console.log("rect1:",rect1)
+    console.log("rect2",rect2)
+    return (rect1.x < rect2.x + rect2.width &&
+        rect1.x + rect1.width > rect2.x &&
+        rect1.y < rect2.y + rect2.height &&
+        rect1.height + rect1.y > rect2.y) ? true : false;
+}
