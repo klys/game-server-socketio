@@ -19,7 +19,7 @@ ClientToServerEvents,
 ServerToClientEvents, 
 InterServerEvents, 
 SocketData>
-(httpServer,{ cors:{origin: "*"} });
+(httpServer,{ cors:{origin: "https://game-client-socketio.herokuapp.com"} });
 
 const world = new World(400,400);
 
