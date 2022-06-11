@@ -16,7 +16,7 @@ export default class Player {
     life:number;
     death:boolean;
     waitTime:number;
-
+    id:number;
     /*mMap:Pathfinding.Grid
     mPath:number[][];
     sPath:number[][];
@@ -36,6 +36,7 @@ export default class Player {
         this.death = false;
         this.finder = new Pathfinding.AStarFinder({ diagonalMovement: 1 })
         this.waitTime = 15;
+        this.id = Math.round(Math.random()*99999);
 
         /*this.mMap = new Pathfinding.Grid(40,40)
         this.mPath = [];
@@ -61,7 +62,7 @@ export default class Player {
 
 
         this.path_pos = this.path_pos + 1;
-        World.socketServer.emit("move", {x:this.x,y:this.y,angle:this.angle,playerId:this.socketId})
+        World.socketServer.emit("move"+this.socketId, {x:this.x,y:this.y,angle:this.angle,playerId:this.socketId, id:this.id})
     }
 
     public findPath(world:World,x:number,y:number) {
@@ -84,7 +85,8 @@ export default class Player {
             playerId:this.socketId,
             x:this.x,
             y:this.y,
-            angle:this.angle
+            angle:this.angle,
+            id:this.id
         }
     }
 
@@ -94,7 +96,7 @@ export default class Player {
             this.die()
             console.log("playerDeath being sent.")
         } else {
-            World.socketServer.emit("playerHurt", {playerId:this.socketId,life:this.life})
+            World.socketServer.emit("playerHurt", {playerId:this.socketId,life:this.life, id:this.id})
             console.log("playerHurt being sent.")
         } 
     }
@@ -102,12 +104,14 @@ export default class Player {
     public reborn() {
         this.life = 100;
         this.death = false;
-        World.socketServer.emit("playerReborn", {playerId:this.socketId})
+        World.socketServer.emit("playerReborn"+this.socketId, {playerId:this.socketId, id:this.id})
+        World.socketServer.emit("playerReborn", {playerId:this.socketId, id:this.id})
     }
 
     public die() {
         this.death = true;
         this.waitTime = 15;
-        World.socketServer.emit("playerDeath", {playerId:this.socketId})
+        World.socketServer.emit("playerDeath"+this.socketId, {playerId:this.socketId, id:this.id})
+        World.socketServer.emit("playerDeath", {playerId:this.socketId, id:this.id})
     }
 }

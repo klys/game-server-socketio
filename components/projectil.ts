@@ -1,4 +1,5 @@
 import {polar_move} from "./gameMath"
+import World from "./world"
 
 export default class Projectil {
     x:number;
@@ -32,7 +33,7 @@ export default class Projectil {
         this.speed = 2;
         this.damage = 15;
         console.log("max distance this projectil will reach: ("+this.toX+", "+this.toY+")")
-        this.id = Math.round(Math.random()*9999);
+        this.id = Math.round(Math.random()*99999);
     }
 
     setOwnership(id:string):void {

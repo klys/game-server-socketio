@@ -1,6 +1,6 @@
 import Player from "./player"
 import Projectil from "./projectil"
-import { collision_square } from "./gameMath";
+import { collision_square, point_direction } from "./gameMath";
 import Pathfinding = require("pathfinding")
 //pf = require("pathfinding");
 
@@ -32,8 +32,13 @@ export default class World {
         setInterval(this.playerWaiting.bind(this),1000)
     }
 
-    shotProjectil(x:number,y:number,angle:number, ownerId:string) {
-        const projectil = new Projectil(x,y,angle);
+    shotProjectil(mouse_x:number,mouse_y:number, ownerId:string) {
+        if (this.players.has(ownerId) === false) return;
+        const player = this.players.get(ownerId);
+        if (player === undefined) return;
+        if (player.death === true) return;
+        const angle = point_direction(player.x,player.y,mouse_x,mouse_y)
+        const projectil = new Projectil(player.x,player.y,angle);
         projectil.ownerId = ownerId;
         this.projectiles.set(projectil.id, projectil);
         World.socketServer.emit("shotProjectil", projectil.data())
@@ -54,7 +59,7 @@ export default class World {
                 console.log("COLLISION!")
                 World.socketServer.emit("explodeProjectil", projectil.data())
             }
-            World.socketServer.emit("moveProjectil", projectil.data())
+            World.socketServer.emit("moveProjectil"+projectil.id, projectil.data())
         })
         
     }
@@ -96,10 +101,13 @@ export default class World {
         return undefined;
     }
 
-    addPlayer(socketId:string) {
+    addPlayer(socketId:string):boolean {
+        if (this.players.has(socketId) === true) return false;
         this.players.set(socketId, new Player(100,100,socketId));
         console.log("players in map: ", this.players.size);
         World.socketServer.emit("addPlayer", this.players.get(socketId)?.data());
+        return true;
+        
     }
 
     presentPlayersTo(socketId:string) {
@@ -110,8 +118,11 @@ export default class World {
 
     removePlayer(socketId:string) {
         if (!this.players.has(socketId)) return;
+        let id = this.players.get(socketId)?.id;
+        if (typeof id === "undefined") return;
+        World.socketServer.emit("removePlayer", {playerId: socketId, id:id})
         this.players.delete(socketId);
-        World.socketServer.emit("removePlayer", {playerId: socketId})
+        
         
     }
 

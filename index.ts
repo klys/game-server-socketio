@@ -19,7 +19,7 @@ ClientToServerEvents,
 ServerToClientEvents, 
 InterServerEvents, 
 SocketData>
-(httpServer,{ cors:{origin: "https://game-client-socketio.herokuapp.com"} });
+(httpServer,{ cors:{origin: "*"} });
 
 const world = new World(400,400);
 
@@ -30,8 +30,7 @@ io.on("connection", (socket) => {
   console.log("Client connected!")
   
   socket.on("addPlayer", () => {
-    world.addPlayer(socket.id);
-    world.presentPlayersTo(socket.id);
+    if (world.addPlayer(socket.id)) world.presentPlayersTo(socket.id);
   });
 
   socket.on("move", (data) => {
@@ -50,7 +49,8 @@ io.on("connection", (socket) => {
     })
 
     socket.on("shotProjectil", (data) => {
-      world.shotProjectil(data.x,data.y,data.angle, socket.id)
+      console.log("shotProjectil")
+      world.shotProjectil(data.mouse_x,data.mouse_y, socket.id)
     })
     
     socket.on("disconnect", (reason) => {
